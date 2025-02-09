@@ -1,0 +1,24 @@
+src/
+├── config/
+│   ├── botConfig.js
+│   └── constants.js
+├── modules/
+│   ├── database/
+│   │   ├── hashDatabase.js
+│   │   └── reportGenerator.js
+│   ├── image/
+│   │   ├── hashProcessor.js
+│   │   └── imageValidator.js
+│   ├── commands/
+│   │   ├── commandHandler.js
+│   │   ├── checkCommand.js
+│   │   ├── hashCommand.js
+│   │   └── permissionCommand.js
+│   └── utils/
+│       ├── logger.js
+│       ├── timeFormatter.js
+│       └── progressBar.js
+├── services/
+│   ├── channelService.js
+│   └── messageProcessor.js
+└── index.js
