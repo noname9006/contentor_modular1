@@ -1,3 +1,5 @@
+const { PermissionFlagsBits } = require('discord.js');
+
 /**
  * Application-wide constants for the Discord Image Hash Bot
  */
@@ -52,15 +54,16 @@ const COMMANDS = {
     HELP: 'help'
 };
 
-// Permission levels
+// Permission levels using Discord.js PermissionFlagsBits
 const PERMISSIONS = {
-    ADMIN: 'ADMINISTRATOR',
-    MODERATOR: 'MANAGE_MESSAGES',
-    USER: 'SEND_MESSAGES',
+    ADMIN: PermissionFlagsBits.Administrator,
+    MODERATOR: PermissionFlagsBits.ManageMessages,
+    USER: PermissionFlagsBits.SendMessages,
     REQUIRED: [
-        'VIEW_CHANNEL',
-        'READ_MESSAGE_HISTORY',
-        'SEND_MESSAGES'
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.AttachFiles
     ]
 };
 
@@ -145,6 +148,26 @@ const DATE_FORMATS = {
     REPORT: 'YYYY-MM-DD HH:mm:ss UTC'
 };
 
+// Error messages
+const ERROR_MESSAGES = {
+    PERMISSIONS: {
+        MISSING: 'Missing required permissions:',
+        CHANNEL_ACCESS: 'Cannot access channel:',
+        INVALID_CHANNEL: 'Invalid or inaccessible channel'
+    },
+    IMAGE: {
+        INVALID_TYPE: 'Unsupported image type',
+        TOO_LARGE: 'Image file size exceeds limit',
+        FETCH_ERROR: 'Failed to fetch image'
+    },
+    PROCESS: {
+        TIMEOUT: 'Operation timed out',
+        MEMORY_LIMIT: 'Memory limit exceeded',
+        RATE_LIMIT: 'Rate limit reached'
+    }
+};
+
+// Export all constants
 module.exports = {
     BOT_MODES,
     PROCESSING,
@@ -158,5 +181,6 @@ module.exports = {
     REPORT,
     MEMORY,
     ENV,
-    DATE_FORMATS
+    DATE_FORMATS,
+    ERROR_MESSAGES
 };

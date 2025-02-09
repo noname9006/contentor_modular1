@@ -1,57 +1,57 @@
+const { PERMISSIONS } = require('../config/constants');
 const logger = require('../modules/utils/logger');
 
 class ChannelService {
     async checkChannelPermissions(channel) {
-        console.log(`Checking permissions for channel ${channel.id}`);
-        if (!channel) {
-            throw new Error('Channel object is null or undefined');
+        try {
+            const botMember = channel.guild.members.cache.get(channel.client.user.id);
+            
+            // Create a single permissions check
+            const missingPermissions = PERMISSIONS.REQUIRED.filter(permission => 
+                !botMember.permissionsIn(channel).has(permission)
+            );
+
+            if (missingPermissions.length > 0) {
+                const missingPermsNames = missingPermissions.map(perm => 
+                    Object.entries(PermissionFlagsBits)
+                        .find(([key, value]) => value === perm)?.[0] || 'Unknown'
+                );
+                throw new Error(`Missing required permissions: ${missingPermsNames.join(', ')}`);
+            }
+
+            return true;
+        } catch (error) {
+            logger.logMessage('PERMISSION_CHECK_ERROR', {
+                channelId: channel.id,
+                error: error.message
+            });
+            throw new Error(`Permission check failed: ${error.message}`);
         }
-        
-        if (!channel.isTextBased() && !channel.isThread() && channel.type !== 15) {
-            throw new Error('This channel is not a text channel, thread, or forum');
-        }
-        
-        const permissions = channel.permissionsFor(channel.client.user);
-        if (!permissions) {
-            throw new Error('Cannot check permissions for this channel');
-        }
-        
-        const requiredPermissions = ['ViewChannel', 'ReadMessageHistory', 'SendMessages'];
-        const missingPermissions = requiredPermissions.filter(perm => !permissions.has(perm));
-        
-        if (missingPermissions.length > 0) {
-            throw new Error(`Missing required permissions: ${missingPermissions.join(', ')}`);
-        }
-        
-        return true;
     }
 
     async countTotalMessages(channel) {
-        console.log(`Counting messages in channel ${channel.id}`);
-        await this.checkChannelPermissions(channel);
-        let totalMessages = 0;
-        let lastMessageId;
-        const batchSize = 100;
-        
         try {
+            let total = 0;
+            let lastId;
+
             while (true) {
-                const options = { limit: batchSize };
-                if (lastMessageId) options.before = lastMessageId;
-                const messages = await channel.messages.fetch(options);
-                if (!messages || messages.size === 0) break;
-                totalMessages += messages.size;
-                lastMessageId = messages.last()?.id;
-                messages.clear();
-                if (global.gc) global.gc();
+                const messages = await channel.messages.fetch({
+                    limit: 100,
+                    ...(lastId && { before: lastId })
+                });
+
+                if (messages.size === 0) break;
                 
-                if (totalMessages % 1000 === 0) {
-                    console.log(`Counted ${totalMessages} messages so far...`);
-                }
+                total += messages.size;
+                lastId = messages.last().id;
             }
-            console.log(`Finished counting messages. Total: ${totalMessages}`);
-            return totalMessages;
+
+            return total;
         } catch (error) {
-            console.error('Error counting messages:', error);
+            logger.logMessage('MESSAGE_COUNT_ERROR', {
+                channelId: channel.id,
+                error: error.message
+            });
             throw new Error(`Failed to count messages: ${error.message}`);
         }
     }
